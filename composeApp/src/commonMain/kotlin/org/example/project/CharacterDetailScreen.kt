@@ -266,9 +266,6 @@ fun CharacterDetailScreen(
             }
         }
 
-        // No mostramos skins/costumes como se solicitó
-        // La sección de costumes ha sido completamente eliminada
-
         // Habilidades
         character.abilities?.let { abilities ->
             if (abilities.isNotEmpty()) {
@@ -313,6 +310,9 @@ fun CharacterDetailScreen(
                                         ability.icon?.let { iconUrl ->
                                             val fullIconUrl = getFullIconUrl(iconUrl) ?: ""
 
+                                            // Imprimir URL para depuración
+                                            println("Loading ability icon from: $fullIconUrl")
+
                                             Box(
                                                 modifier = Modifier
                                                     .size(50.dp)
@@ -322,15 +322,30 @@ fun CharacterDetailScreen(
                                                 KamelImage(
                                                     resource = asyncPainterResource(fullIconUrl),
                                                     contentDescription = ability.name,
-                                                    contentScale = ContentScale.Fit,
+                                                    contentScale = ContentScale.FillBounds, // Cambiado a FillBounds para llenar completamente
                                                     modifier = Modifier
                                                         .fillMaxSize()
                                                         .padding(4.dp),
                                                     onLoading = {
-                                                        CircularProgressIndicator(Modifier.align(Alignment.Center))
+                                                        CircularProgressIndicator(
+                                                            modifier = Modifier
+                                                                .size(24.dp)
+                                                                .align(Alignment.Center)
+                                                        )
                                                     },
                                                     onFailure = {
-                                                        Text("⚠️", Modifier.align(Alignment.Center))
+                                                        Column(
+                                                            modifier = Modifier.fillMaxSize(),
+                                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                                            verticalArrangement = Arrangement.Center
+                                                        ) {
+                                                            Text("⚠️", fontSize = MaterialTheme.typography.titleSmall.fontSize)
+                                                            Text(
+                                                                "Icon error",
+                                                                style = MaterialTheme.typography.bodySmall,
+                                                                textAlign = TextAlign.Center
+                                                            )
+                                                        }
                                                     }
                                                 )
                                             }

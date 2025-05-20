@@ -7,11 +7,20 @@ package org.example.project
  * Si no, añade el prefijo de la API
  */
 fun getFullImageUrl(imageUrl: String): String {
-    return if (imageUrl.startsWith("http")) {
-        imageUrl
-    } else {
-        "https://marvelrivalsapi.com$imageUrl"
+    // Si ya es una URL completa, devolverla tal cual
+    if (imageUrl.startsWith("http")) {
+        return imageUrl
     }
+
+    // Si no tiene barra inicial, añadirla
+    val normalizedUrl = if (!imageUrl.startsWith("/")) {
+        "/$imageUrl"
+    } else {
+        imageUrl
+    }
+
+    // Devolver la URL completa con el prefijo de la API
+    return "https://marvelrivalsapi.com$normalizedUrl"
 }
 
 /**
@@ -20,7 +29,15 @@ fun getFullImageUrl(imageUrl: String): String {
  */
 fun getFullIconUrl(iconUrl: String?): String? {
     return iconUrl?.let {
-        getFullImageUrl(it)
+        // Algunos iconos pueden venir sin la barra inicial, asegurémonos de añadirla
+        val normalizedUrl = if (!it.startsWith("/") && !it.startsWith("http")) {
+            "/$it"
+        } else {
+            it
+        }
+
+        // Ahora llamamos a getFullImageUrl con la URL normalizada
+        getFullImageUrl(normalizedUrl)
     }
 }
 
