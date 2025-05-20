@@ -35,7 +35,6 @@ class AppState {
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     var selectedCharacter by mutableStateOf<RivalsCharacter?>(null)
-    var showCharacters by mutableStateOf(false)
 
     suspend fun loadCharacters() {
         if (characters.isNotEmpty()) return
@@ -49,10 +48,6 @@ class AppState {
         } finally {
             isLoading = false
         }
-    }
-
-    fun toggleCharactersList() {
-        showCharacters = !showCharacters
     }
 
     fun selectCharacter(character: RivalsCharacter?) {
@@ -93,18 +88,7 @@ fun App() {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    Button(onClick = {
-                        state.toggleCharactersList()
-                        if (state.showCharacters && state.characters.isEmpty()) {
-                            scope.launch {
-                                state.loadCharacters()
-                            }
-                        }
-                    }) {
-                        Text(if (state.showCharacters) "Hide Characters" else "Show Marvel Rivals Characters")
-                    }
-
-                    Spacer(Modifier.height(8.dp))
+                    // Eliminamos el botón para mostrar los personajes
 
                     if (state.isLoading) {
                         CircularProgressIndicator()
@@ -116,25 +100,24 @@ fun App() {
                         Spacer(Modifier.height(8.dp))
                     }
 
-                    AnimatedVisibility(state.showCharacters) {
-                        Column(Modifier.fillMaxSize()) {
-                            if (state.characters.isEmpty() && !state.isLoading) {
-                                Text("No characters found",
-                                    modifier = Modifier.padding(16.dp))
-                            } else {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Adaptive(minSize = 180.dp),
-                                    contentPadding = PaddingValues(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    items(state.characters) { character ->
-                                        CharacterCard(
-                                            character = character,
-                                            onClick = { state.selectCharacter(character) }
-                                        )
-                                    }
+                    // Mostramos siempre los personajes, sin depender de showCharacters
+                    Column(Modifier.fillMaxSize()) {
+                        if (state.characters.isEmpty() && !state.isLoading) {
+                            Text("No characters found",
+                                modifier = Modifier.padding(16.dp))
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 180.dp),
+                                contentPadding = PaddingValues(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                items(state.characters) { character ->
+                                    CharacterCard(
+                                        character = character,
+                                        onClick = { state.selectCharacter(character) }
+                                    )
                                 }
                             }
                         }

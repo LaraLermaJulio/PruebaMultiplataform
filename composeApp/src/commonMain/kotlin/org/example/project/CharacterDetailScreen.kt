@@ -3,9 +3,7 @@ package org.example.project
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -185,104 +183,9 @@ fun CharacterDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Transformaciones
-        character.transformations?.let { transformations ->
-            if (transformations.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Transformations",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+        // Eliminamos la sección de transformaciones completamente
 
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(transformations) { transformation ->
-                            Card(
-                                modifier = Modifier.width(160.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(12.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    transformation.icon?.let { iconUrl ->
-                                        // Improved handling for transformation icon URLs
-                                        val fullIconUrl = getFullIconUrl(iconUrl)
-                                        println("Transformation icon URL: $fullIconUrl (from ${transformation.name})")
-
-                                        Box(
-                                            modifier = Modifier
-                                                .size(80.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        ) {
-                                            KamelImage(
-                                                resource = asyncPainterResource(fullIconUrl ?: ""),
-                                                contentDescription = transformation.name,
-                                                contentScale = ContentScale.Fit,
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .padding(8.dp),
-                                                onLoading = {
-                                                    CircularProgressIndicator(Modifier.align(Alignment.Center))
-                                                },
-                                                onFailure = {
-                                                    Column(
-                                                        modifier = Modifier.fillMaxSize(),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.Center
-                                                    ) {
-                                                        Text("⚠️")
-                                                        Text(
-                                                            "Failed to load: ${fullIconUrl?.takeLast(20) ?: "null"}",
-                                                            style = MaterialTheme.typography.bodySmall,
-                                                            textAlign = TextAlign.Center,
-                                                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                                            maxLines = 2,
-                                                            overflow = TextOverflow.Ellipsis
-                                                        )
-                                                    }
-                                                }
-                                            )
-                                        }
-
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
-
-                                    Text(
-                                        text = transformation.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        textAlign = TextAlign.Center
-                                    )
-
-                                    Spacer(modifier = Modifier.height(4.dp))
-
-                                    transformation.health?.let {
-                                        Text(
-                                            text = "Health: $it",
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-
-                                    transformation.movementSpeed?.let {
-                                        Text(
-                                            text = "Speed: $it",
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-            }
-        }
-
-        // Habilidades
+        // Habilidades sin imágenes
         character.abilities?.let { abilities ->
             if (abilities.isNotEmpty()) {
                 item {
@@ -318,127 +221,78 @@ fun CharacterDetailScreen(
                                 Card(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        verticalAlignment = Alignment.Top
+                                    Column(
+                                        modifier = Modifier.padding(12.dp)
                                     ) {
-                                        ability.icon?.let { iconUrl ->
-                                            // Improved handling for ability icon URLs
-                                            val fullIconUrl = getFullIconUrl(iconUrl)
-                                            println("Ability icon URL: $fullIconUrl (from ${ability.name})")
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Text(
+                                                text = ability.name ?: "",
+                                                style = MaterialTheme.typography.titleMedium
+                                            )
 
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(50.dp)
-                                                    .clip(RoundedCornerShape(8.dp))
-                                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            ) {
-                                                KamelImage(
-                                                    resource = asyncPainterResource(fullIconUrl ?: ""),
-                                                    contentDescription = ability.name,
-                                                    contentScale = ContentScale.Fit,
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .padding(4.dp),
-                                                    onLoading = {
-                                                        CircularProgressIndicator(
-                                                            modifier = Modifier
-                                                                .size(24.dp)
-                                                                .align(Alignment.Center)
-                                                        )
-                                                    },
-                                                    onFailure = {
-                                                        Column(
-                                                            modifier = Modifier.fillMaxSize(),
-                                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                                            verticalArrangement = Arrangement.Center
-                                                        ) {
-                                                            Text("⚠️", fontSize = MaterialTheme.typography.titleSmall.fontSize)
-                                                            Text(
-                                                                "Failed: ${fullIconUrl?.takeLast(20) ?: "null"}",
-                                                                style = MaterialTheme.typography.bodySmall,
-                                                                textAlign = TextAlign.Center,
-                                                                maxLines = 2,
-                                                                overflow = TextOverflow.Ellipsis
-                                                            )
-                                                        }
-                                                    }
-                                                )
+                                            ability.type?.let {
+                                                val typeColor = when (it) {
+                                                    "Ultimate" -> Color(0xFFFF5722)
+                                                    "Weapon" -> Color(0xFF673AB7)
+                                                    else -> Color(0xFF03A9F4)
+                                                }
+
+                                                Surface(
+                                                    shape = RoundedCornerShape(4.dp),
+                                                    color = typeColor,
+                                                    contentColor = Color.White,
+                                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = it,
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    )
+                                                }
                                             }
                                         }
 
-                                        Column(Modifier.weight(1f)) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                Text(
-                                                    text = ability.name ?: "",
-                                                    style = MaterialTheme.typography.titleMedium
-                                                )
+                                        Spacer(modifier = Modifier.height(4.dp))
 
-                                                ability.type?.let {
-                                                    val typeColor = when (it) {
-                                                        "Ultimate" -> Color(0xFFFF5722)
-                                                        "Weapon" -> Color(0xFF673AB7)
-                                                        else -> Color(0xFF03A9F4)
-                                                    }
+                                        ability.description?.let {
+                                            Text(
+                                                text = it,
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                        }
 
-                                                    Surface(
-                                                        shape = RoundedCornerShape(4.dp),
-                                                        color = typeColor,
-                                                        contentColor = Color.White,
-                                                        modifier = Modifier.padding(horizontal = 4.dp)
+                                        ability.additionalFields?.let { fields ->
+                                            if (fields.isNotEmpty()) {
+                                                Card(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                                    )
+                                                ) {
+                                                    Column(
+                                                        modifier = Modifier.padding(8.dp),
+                                                        verticalArrangement = Arrangement.spacedBy(4.dp)
                                                     ) {
-                                                        Text(
-                                                            text = it,
-                                                            style = MaterialTheme.typography.labelSmall,
-                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                        )
-                                                    }
-                                                }
-                                            }
+                                                        fields.forEach { (key, value) ->
+                                                            Row(
+                                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = "$key:",
+                                                                    style = MaterialTheme.typography.bodySmall,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    modifier = Modifier.width(100.dp)
+                                                                )
 
-                                            Spacer(modifier = Modifier.height(4.dp))
-
-                                            ability.description?.let {
-                                                Text(
-                                                    text = it,
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                            }
-
-                                            ability.additionalFields?.let { fields ->
-                                                if (fields.isNotEmpty()) {
-                                                    Card(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        colors = CardDefaults.cardColors(
-                                                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                                        )
-                                                    ) {
-                                                        Column(
-                                                            modifier = Modifier.padding(8.dp),
-                                                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                                                        ) {
-                                                            fields.forEach { (key, value) ->
-                                                                Row(
-                                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                                                ) {
-                                                                    Text(
-                                                                        text = "$key:",
-                                                                        style = MaterialTheme.typography.bodySmall,
-                                                                        fontWeight = FontWeight.Bold,
-                                                                        modifier = Modifier.width(100.dp)
-                                                                    )
-
-                                                                    Text(
-                                                                        text = value,
-                                                                        style = MaterialTheme.typography.bodySmall,
-                                                                        modifier = Modifier.weight(1f)
-                                                                    )
-                                                                }
+                                                                Text(
+                                                                    text = value,
+                                                                    style = MaterialTheme.typography.bodySmall,
+                                                                    modifier = Modifier.weight(1f)
+                                                                )
                                                             }
                                                         }
                                                     }
