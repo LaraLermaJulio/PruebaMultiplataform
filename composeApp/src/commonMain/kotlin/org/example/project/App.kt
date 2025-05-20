@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import org.example.project.data.RivalsCharacter
 import org.example.project.network.RivalsApiClient
@@ -175,15 +176,16 @@ private fun CharacterCard(
     Card(
         modifier = Modifier
             .width(180.dp)
-            .height(280.dp)
+            .height(400.dp)  // Incrementé considerablemente la altura a 400dp
             .clickable(onClick = onClick)
     ) {
-        Column {
-            // Imagen del personaje con fondo y mejor manejo de errores
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Imagen de fondo que ocupa todo el contenedor
             Box(
                 Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
+                    .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 // Usamos la función de utilidad para URL
@@ -192,10 +194,8 @@ private fun CharacterCard(
                 KamelImage(
                     resource = asyncPainterResource(imageUrl),
                     contentDescription = character.name,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    contentScale = ContentScale.Fit,  // Cambiado a Fit para mostrar completa
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds,  // Cambiado a FillBounds para estirar y llenar completamente
                     onLoading = {
                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                     },
@@ -217,44 +217,57 @@ private fun CharacterCard(
                     }
                 )
             }
-            // Datos del personaje
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(8.dp)
+
+            // Panel semitransparente para el texto en la parte inferior
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(vertical = 12.dp, horizontal = 8.dp)  // Aumenté el padding vertical
             ) {
-                Text(
-                    text = character.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(4.dp))
-                character.realName?.let {
+                // Datos del personaje
+                Column(
+                    Modifier
+                        .padding(8.dp)
+                ) {
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
+                        text = character.name,
+                        style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color.White
                     )
                     Spacer(Modifier.height(4.dp))
-                }
-                character.role?.let {
-                    Text(
-                        text = "Role: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                character.team?.let {
-                    if (it.isNotEmpty()) {
+                    character.realName?.let {
                         Text(
-                            text = "Team: ${it.joinToString()}",
+                            text = it,
                             style = MaterialTheme.typography.bodySmall,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color.White.copy(alpha = 0.8f)
                         )
+                        Spacer(Modifier.height(4.dp))
+                    }
+                    character.role?.let {
+                        Text(
+                            text = "Role: $it",
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                    character.team?.let {
+                        if (it.isNotEmpty()) {
+                            Text(
+                                text = "Team: ${it.joinToString()}",
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
             }
