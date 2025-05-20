@@ -176,7 +176,7 @@ private fun CharacterCard(
     Card(
         modifier = Modifier
             .width(180.dp)
-            .height(400.dp)  // Incrementé considerablemente la altura a 400dp
+            .height(400.dp)
             .clickable(onClick = onClick)
     ) {
         Box(
@@ -195,7 +195,7 @@ private fun CharacterCard(
                     resource = asyncPainterResource(imageUrl),
                     contentDescription = character.name,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds,  // Cambiado a FillBounds para estirar y llenar completamente
+                    contentScale = ContentScale.FillBounds,
                     onLoading = {
                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                     },
@@ -216,60 +216,6 @@ private fun CharacterCard(
                         }
                     }
                 )
-            }
-
-            // Panel semitransparente para el texto en la parte inferior
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .background(Color.Black.copy(alpha = 0.7f))
-                    .padding(vertical = 12.dp, horizontal = 8.dp)  // Aumenté el padding vertical
-            ) {
-                // Datos del personaje
-                Column(
-                    Modifier
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = character.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = Color.White
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    character.realName?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
-                        Spacer(Modifier.height(4.dp))
-                    }
-                    character.role?.let {
-                        Text(
-                            text = "Role: $it",
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
-                    }
-                    character.team?.let {
-                        if (it.isNotEmpty()) {
-                            Text(
-                                text = "Team: ${it.joinToString()}",
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
-                        }
-                    }
-                }
             }
         }
     }
