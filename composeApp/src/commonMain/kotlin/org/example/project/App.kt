@@ -16,14 +16,13 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
-import org.example.project.data.MarvelCharacter
-import org.example.project.network.MarvelApiClient
+import org.example.project.data.RivalsCharacter
+import org.example.project.network.RivalsApiClient
 
 @Composable
 fun App() {
     val scope = rememberCoroutineScope()
-    var characters by remember { mutableStateOf<List<MarvelCharacter>>(emptyList()) }
-    var offset by remember { mutableStateOf(0) }
+    var characters by remember { mutableStateOf<List<RivalsCharacter>>(emptyList()) }
     var showCharacters by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -35,6 +34,12 @@ fun App() {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                "Marvel Rivals Characters",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
             Button(onClick = {
                 showCharacters = !showCharacters
                 if (showCharacters && characters.isEmpty()) {
@@ -42,7 +47,7 @@ fun App() {
                     error = null
                     scope.launch {
                         try {
-                            characters = MarvelApiClient.fetchCharacters(offset = offset)
+                            characters = RivalsApiClient.fetchCharacters()
                             isLoading = false
                         } catch (e: Exception) {
                             error = "Error al cargar personajes: ${e.message}"
@@ -51,7 +56,7 @@ fun App() {
                     }
                 }
             }) {
-                Text(if (showCharacters) "Ocultar personajes" else "Mostrar personajes de Marvel")
+                Text(if (showCharacters) "Ocultar personajes" else "Mostrar personajes de Marvel Rivals")
             }
 
             Spacer(Modifier.height(8.dp))
@@ -83,33 +88,6 @@ fun App() {
                                 CharacterCard(character)
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
-                        Button(
-                            onClick = {
-                                isLoading = true
-                                scope.launch {
-                                    try {
-                                        val newOffset = offset + characters.size
-                                        val newCharacters = MarvelApiClient.fetchCharacters(offset = newOffset)
-                                        if (newCharacters.isNotEmpty()) {
-                                            characters = characters + newCharacters
-                                            offset = newOffset
-                                        } else {
-                                            error = "No hay más personajes disponibles"
-                                        }
-                                        isLoading = false
-                                    } catch (e: Exception) {
-                                        error = "Error al cargar más personajes: ${e.message}"
-                                        isLoading = false
-                                    }
-                                }
-                            },
-                            enabled = !isLoading && characters.isNotEmpty(),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(if (isLoading) "Cargando..." else "Cargar más")
-                        }
-                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }
@@ -118,7 +96,7 @@ fun App() {
 }
 
 @Composable
-private fun CharacterCard(character: MarvelCharacter) {
+private fun CharacterCard(character: RivalsCharacter) {
     Card(
         modifier = Modifier
             .width(180.dp)
@@ -131,8 +109,15 @@ private fun CharacterCard(character: MarvelCharacter) {
                     .fillMaxWidth()
                     .height(180.dp)
             ) {
+                // Creamos la URL completa para la imagen
+                val imageUrl = if (character.imageUrl.startsWith("http")) {
+                    character.imageUrl
+                } else {
+                    "https://marvelrivalsapi.com${character.imageUrl}"
+                }
+
                 KamelImage(
-                    resource = asyncPainterResource(character.thumbnail.getUrl()),
+                    resource = asyncPainterResource(imageUrl),
                     contentDescription = character.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
@@ -157,19 +142,32 @@ private fun CharacterCard(character: MarvelCharacter) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(4.dp))
-                if (character.description.isNotEmpty()) {
+                character.realName?.let {
                     Text(
-                        text = character.description,
+                        text = it,
                         style = MaterialTheme.typography.bodySmall,
-                        maxLines = 3,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                } else {
+                    Spacer(Modifier.height(4.dp))
+                }
+                character.role?.let {
                     Text(
-                        text = "Sin descripción disponible",
+                        text = "Role: $it",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
+                }
+                character.team?.let {
+                    if (it.isNotEmpty()) {
+                        Text(
+                            text = "Team: ${it.joinToString()}",
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
