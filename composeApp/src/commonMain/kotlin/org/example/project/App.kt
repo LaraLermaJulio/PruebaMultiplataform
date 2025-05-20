@@ -1,6 +1,9 @@
 package org.example.project
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -26,69 +29,96 @@ fun App() {
     var showCharacters by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var selectedCharacter by remember { mutableStateOf<RivalsCharacter?>(null) }
 
     MaterialTheme {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "Marvel Rivals Characters",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        Box(Modifier.fillMaxSize()) {
+            // Pantalla principal
+            AnimatedVisibility(
+                visible = selectedCharacter == null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Marvel Rivals Characters",
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
-            Button(onClick = {
-                showCharacters = !showCharacters
-                if (showCharacters && characters.isEmpty()) {
-                    isLoading = true
-                    error = null
-                    scope.launch {
-                        try {
-                            characters = RivalsApiClient.fetchCharacters()
-                            isLoading = false
-                        } catch (e: Exception) {
-                            error = "Error al cargar personajes: ${e.message}"
-                            isLoading = false
+                    Button(onClick = {
+                        showCharacters = !showCharacters
+                        if (showCharacters && characters.isEmpty()) {
+                            isLoading = true
+                            error = null
+                            scope.launch {
+                                try {
+                                    characters = RivalsApiClient.fetchCharacters()
+                                    isLoading = false
+                                } catch (e: Exception) {
+                                    error = "Error al cargar personajes: ${e.message}"
+                                    isLoading = false
+                                }
+                            }
                         }
+                    }) {
+                        Text(if (showCharacters) "Ocultar personajes" else "Mostrar personajes de Marvel Rivals")
                     }
-                }
-            }) {
-                Text(if (showCharacters) "Ocultar personajes" else "Mostrar personajes de Marvel Rivals")
-            }
 
-            Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(8.dp))
 
-            if (isLoading) {
-                CircularProgressIndicator()
-                Spacer(Modifier.height(8.dp))
-            }
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                        Spacer(Modifier.height(8.dp))
+                    }
 
-            error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error)
-                Spacer(Modifier.height(8.dp))
-            }
+                    error?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.height(8.dp))
+                    }
 
-            AnimatedVisibility(showCharacters) {
-                Column(Modifier.fillMaxSize()) {
-                    if (characters.isEmpty() && !isLoading) {
-                        Text("No se encontraron personajes",
-                            modifier = Modifier.padding(16.dp))
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(minSize = 180.dp),
-                            contentPadding = PaddingValues(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            items(characters) { character ->
-                                CharacterCard(character)
+                    AnimatedVisibility(showCharacters) {
+                        Column(Modifier.fillMaxSize()) {
+                            if (characters.isEmpty() && !isLoading) {
+                                Text("No se encontraron personajes",
+                                    modifier = Modifier.padding(16.dp))
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(minSize = 180.dp),
+                                    contentPadding = PaddingValues(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    items(characters) { character ->
+                                        CharacterCard(
+                                            character = character,
+                                            onClick = { selectedCharacter = character }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
+                }
+            }
+
+            // Pantalla de detalle
+            AnimatedVisibility(
+                visible = selectedCharacter != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                selectedCharacter?.let { character ->
+                    CharacterDetailScreen(
+                        character = character,
+                        onBack = { selectedCharacter = null }
+                    )
                 }
             }
         }
@@ -96,11 +126,15 @@ fun App() {
 }
 
 @Composable
-private fun CharacterCard(character: RivalsCharacter) {
+private fun CharacterCard(
+    character: RivalsCharacter,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .width(180.dp)
             .height(280.dp)
+            .clickable(onClick = onClick)
     ) {
         Column {
             // Imagen del personaje
