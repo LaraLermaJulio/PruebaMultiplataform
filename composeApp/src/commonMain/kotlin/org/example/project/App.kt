@@ -22,20 +22,57 @@ import androidx.compose.runtime.rememberCoroutineScope
 import org.example.project.data.RivalsCharacter
 import org.example.project.network.RivalsApiClient
 
+/**
+ * App state para centralizar la lógica de UI y mantener un único punto de verdad
+ */
+class AppState {
+    var characters by mutableStateOf<List<RivalsCharacter>>(emptyList())
+    var isLoading by mutableStateOf(false)
+    var error by mutableStateOf<String?>(null)
+    var selectedCharacter by mutableStateOf<RivalsCharacter?>(null)
+    var showCharacters by mutableStateOf(false)
+
+    suspend fun loadCharacters() {
+        if (characters.isNotEmpty()) return
+
+        isLoading = true
+        error = null
+        try {
+            characters = RivalsApiClient.fetchCharacters()
+        } catch (e: Exception) {
+            error = "Error loading characters: ${e.message}"
+        } finally {
+            isLoading = false
+        }
+    }
+
+    fun toggleCharactersList() {
+        showCharacters = !showCharacters
+    }
+
+    fun selectCharacter(character: RivalsCharacter?) {
+        selectedCharacter = character
+    }
+}
+
+@Composable
+fun rememberAppState() = remember { AppState() }
+
 @Composable
 fun App() {
+    val state = rememberAppState()
     val scope = rememberCoroutineScope()
-    var characters by remember { mutableStateOf<List<RivalsCharacter>>(emptyList()) }
-    var showCharacters by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
-    var selectedCharacter by remember { mutableStateOf<RivalsCharacter?>(null) }
 
-    MaterialTheme {
+    // Cargar datos automáticamente al inicio
+    LaunchedEffect(Unit) {
+        state.loadCharacters()
+    }
+
+    AppTheme {
         Box(Modifier.fillMaxSize()) {
             // Pantalla principal
             AnimatedVisibility(
-                visible = selectedCharacter == null,
+                visible = state.selectedCharacter == null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -52,40 +89,32 @@ fun App() {
                     )
 
                     Button(onClick = {
-                        showCharacters = !showCharacters
-                        if (showCharacters && characters.isEmpty()) {
-                            isLoading = true
-                            error = null
+                        state.toggleCharactersList()
+                        if (state.showCharacters && state.characters.isEmpty()) {
                             scope.launch {
-                                try {
-                                    characters = RivalsApiClient.fetchCharacters()
-                                    isLoading = false
-                                } catch (e: Exception) {
-                                    error = "Error al cargar personajes: ${e.message}"
-                                    isLoading = false
-                                }
+                                state.loadCharacters()
                             }
                         }
                     }) {
-                        Text(if (showCharacters) "Ocultar personajes" else "Mostrar personajes de Marvel Rivals")
+                        Text(if (state.showCharacters) "Hide Characters" else "Show Marvel Rivals Characters")
                     }
 
                     Spacer(Modifier.height(8.dp))
 
-                    if (isLoading) {
+                    if (state.isLoading) {
                         CircularProgressIndicator()
                         Spacer(Modifier.height(8.dp))
                     }
 
-                    error?.let {
+                    state.error?.let {
                         Text(it, color = MaterialTheme.colorScheme.error)
                         Spacer(Modifier.height(8.dp))
                     }
 
-                    AnimatedVisibility(showCharacters) {
+                    AnimatedVisibility(state.showCharacters) {
                         Column(Modifier.fillMaxSize()) {
-                            if (characters.isEmpty() && !isLoading) {
-                                Text("No se encontraron personajes",
+                            if (state.characters.isEmpty() && !state.isLoading) {
+                                Text("No characters found",
                                     modifier = Modifier.padding(16.dp))
                             } else {
                                 LazyVerticalGrid(
@@ -95,10 +124,10 @@ fun App() {
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    items(characters) { character ->
+                                    items(state.characters) { character ->
                                         CharacterCard(
                                             character = character,
-                                            onClick = { selectedCharacter = character }
+                                            onClick = { state.selectCharacter(character) }
                                         )
                                     }
                                 }
@@ -110,19 +139,28 @@ fun App() {
 
             // Pantalla de detalle
             AnimatedVisibility(
-                visible = selectedCharacter != null,
+                visible = state.selectedCharacter != null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                selectedCharacter?.let { character ->
+                state.selectedCharacter?.let { character ->
                     CharacterDetailScreen(
                         character = character,
-                        onBack = { selectedCharacter = null }
+                        onBack = { state.selectCharacter(null) }
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun AppTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = lightColorScheme(), // o darkColorScheme()
+        typography = Typography(),        // puedes usar la tipografía por defecto
+        content = content
+    )
 }
 
 @Composable
@@ -143,12 +181,8 @@ private fun CharacterCard(
                     .fillMaxWidth()
                     .height(180.dp)
             ) {
-                // Creamos la URL completa para la imagen
-                val imageUrl = if (character.imageUrl.startsWith("http")) {
-                    character.imageUrl
-                } else {
-                    "https://marvelrivalsapi.com${character.imageUrl}"
-                }
+                // Usamos la función de utilidad para URL
+                val imageUrl = getFullImageUrl(character.imageUrl)
 
                 KamelImage(
                     resource = asyncPainterResource(imageUrl),
@@ -159,7 +193,14 @@ private fun CharacterCard(
                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                     },
                     onFailure = {
-                        Text("⚠️", Modifier.align(Alignment.Center))
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Image not available", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        }
                     }
                 )
             }
