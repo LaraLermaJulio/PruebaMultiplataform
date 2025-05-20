@@ -3,6 +3,7 @@ package org.example.project
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -18,7 +19,10 @@ import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import org.example.project.data.RivalsCharacter
 import org.example.project.network.RivalsApiClient
 
@@ -175,11 +179,12 @@ private fun CharacterCard(
             .clickable(onClick = onClick)
     ) {
         Column {
-            // Imagen del personaje
+            // Imagen del personaje con fondo y mejor manejo de errores
             Box(
                 Modifier
                     .fillMaxWidth()
                     .height(180.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 // Usamos la función de utilidad para URL
                 val imageUrl = getFullImageUrl(character.imageUrl)
@@ -187,19 +192,27 @@ private fun CharacterCard(
                 KamelImage(
                     resource = asyncPainterResource(imageUrl),
                     contentDescription = character.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    contentScale = ContentScale.Fit,  // Cambiado a Fit para mostrar completa
                     onLoading = {
                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                     },
                     onFailure = {
-                        Box(
+                        Column(
                             Modifier
                                 .fillMaxSize()
                                 .padding(16.dp),
-                            contentAlignment = Alignment.Center
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Text("Image not available", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text("⚠️")
+                            Text(
+                                "Image not available",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                     }
                 )

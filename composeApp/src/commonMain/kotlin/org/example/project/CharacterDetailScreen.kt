@@ -60,28 +60,37 @@ fun CharacterDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    val imageUrl = if (character.imageUrl.startsWith("http")) {
-                        character.imageUrl
-                    } else {
-                        "https://marvelrivalsapi.com${character.imageUrl}"
-                    }
+                    // Imagen mejorada con tamaño ajustado y mejor manejo de errores
+                    val imageUrl = getFullImageUrl(character.imageUrl)
 
                     Box(
                         modifier = Modifier
                             .width(150.dp)
                             .height(200.dp)
                             .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         KamelImage(
                             resource = asyncPainterResource(imageUrl),
                             contentDescription = character.name,
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.Fit, // Cambiado a Fit para mostrar completa
                             modifier = Modifier.fillMaxSize(),
                             onLoading = {
                                 CircularProgressIndicator(Modifier.align(Alignment.Center))
                             },
                             onFailure = {
-                                Text("⚠️", Modifier.align(Alignment.Center))
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text("⚠️")
+                                    Text(
+                                        "Image not available",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
                         )
                     }
@@ -199,22 +208,21 @@ fun CharacterDetailScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     transformation.icon?.let { iconUrl ->
-                                        val fullIconUrl = if (iconUrl.startsWith("http")) {
-                                            iconUrl
-                                        } else {
-                                            "https://marvelrivalsapi.com$iconUrl"
-                                        }
+                                        val fullIconUrl = getFullIconUrl(iconUrl) ?: ""
 
                                         Box(
                                             modifier = Modifier
                                                 .size(80.dp)
                                                 .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surfaceVariant)
                                         ) {
                                             KamelImage(
                                                 resource = asyncPainterResource(fullIconUrl),
                                                 contentDescription = transformation.name,
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Fit,
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(8.dp),
                                                 onLoading = {
                                                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                                                 },
@@ -258,116 +266,8 @@ fun CharacterDetailScreen(
             }
         }
 
-        // Disfraces/Skins
-        character.costumes?.let { costumes ->
-            if (costumes.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Costumes",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        costumes.forEach { costume ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(12.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    costume.icon?.let { iconUrl ->
-                                        val fullIconUrl = if (iconUrl.startsWith("http")) {
-                                            iconUrl
-                                        } else {
-                                            "https://marvelrivalsapi.com$iconUrl"
-                                        }
-
-                                        Box(
-                                            modifier = Modifier
-                                                .size(80.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                        ) {
-                                            KamelImage(
-                                                resource = asyncPainterResource(fullIconUrl),
-                                                contentDescription = costume.name,
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier.fillMaxSize(),
-                                                onLoading = {
-                                                    CircularProgressIndicator(Modifier.align(Alignment.Center))
-                                                },
-                                                onFailure = {
-                                                    Text("⚠️", Modifier.align(Alignment.Center))
-                                                }
-                                            )
-                                        }
-                                    }
-
-                                    Column(Modifier.weight(1f)) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Text(
-                                                text = costume.name,
-                                                style = MaterialTheme.typography.titleMedium
-                                            )
-
-                                            costume.quality?.let {
-                                                val qualityColor = when (it) {
-                                                    "BLUE" -> Color.Blue
-                                                    "PURPLE" -> Color(0xFF8A2BE2)
-                                                    "ORANGE" -> Color.Red
-                                                    else -> Color.Gray
-                                                }
-
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(16.dp)
-                                                        .clip(CircleShape)
-                                                        .background(qualityColor)
-                                                )
-                                            }
-                                        }
-
-                                        Spacer(modifier = Modifier.height(4.dp))
-
-                                        costume.description?.let {
-                                            if (it != "No description available") {
-                                                Text(
-                                                    text = it,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    maxLines = 2,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                                Spacer(modifier = Modifier.height(4.dp))
-                                            }
-                                        }
-
-                                        costume.appearance?.let {
-                                            if (it != "No appearance data available") {
-                                                Text(
-                                                    text = it,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-            }
-        }
+        // No mostramos skins/costumes como se solicitó
+        // La sección de costumes ha sido completamente eliminada
 
         // Habilidades
         character.abilities?.let { abilities ->
@@ -411,22 +311,21 @@ fun CharacterDetailScreen(
                                         verticalAlignment = Alignment.Top
                                     ) {
                                         ability.icon?.let { iconUrl ->
-                                            val fullIconUrl = if (iconUrl.startsWith("http")) {
-                                                iconUrl
-                                            } else {
-                                                "https://marvelrivalsapi.com$iconUrl"
-                                            }
+                                            val fullIconUrl = getFullIconUrl(iconUrl) ?: ""
 
                                             Box(
                                                 modifier = Modifier
                                                     .size(50.dp)
                                                     .clip(RoundedCornerShape(8.dp))
+                                                    .background(MaterialTheme.colorScheme.surfaceVariant)
                                             ) {
                                                 KamelImage(
                                                     resource = asyncPainterResource(fullIconUrl),
                                                     contentDescription = ability.name,
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .padding(4.dp),
                                                     onLoading = {
                                                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                                                     },
