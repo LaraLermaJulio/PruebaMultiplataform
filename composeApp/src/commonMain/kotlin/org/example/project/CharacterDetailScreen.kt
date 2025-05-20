@@ -208,7 +208,9 @@ fun CharacterDetailScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     transformation.icon?.let { iconUrl ->
-                                        val fullIconUrl = getFullIconUrl(iconUrl) ?: ""
+                                        // Improved handling for transformation icon URLs
+                                        val fullIconUrl = getFullIconUrl(iconUrl)
+                                        println("Transformation icon URL: $fullIconUrl (from ${transformation.name})")
 
                                         Box(
                                             modifier = Modifier
@@ -217,7 +219,7 @@ fun CharacterDetailScreen(
                                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                                         ) {
                                             KamelImage(
-                                                resource = asyncPainterResource(fullIconUrl),
+                                                resource = asyncPainterResource(fullIconUrl ?: ""),
                                                 contentDescription = transformation.name,
                                                 contentScale = ContentScale.Fit,
                                                 modifier = Modifier
@@ -227,7 +229,21 @@ fun CharacterDetailScreen(
                                                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                                                 },
                                                 onFailure = {
-                                                    Text("⚠️", Modifier.align(Alignment.Center))
+                                                    Column(
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                        verticalArrangement = Arrangement.Center
+                                                    ) {
+                                                        Text("⚠️")
+                                                        Text(
+                                                            "Failed to load: ${fullIconUrl?.takeLast(20) ?: "null"}",
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            textAlign = TextAlign.Center,
+                                                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                                            maxLines = 2,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
                                                 }
                                             )
                                         }
@@ -308,10 +324,9 @@ fun CharacterDetailScreen(
                                         verticalAlignment = Alignment.Top
                                     ) {
                                         ability.icon?.let { iconUrl ->
-                                            val fullIconUrl = getFullIconUrl(iconUrl) ?: ""
-
-                                            // Imprimir URL para depuración
-                                            println("Loading ability icon from: $fullIconUrl")
+                                            // Improved handling for ability icon URLs
+                                            val fullIconUrl = getFullIconUrl(iconUrl)
+                                            println("Ability icon URL: $fullIconUrl (from ${ability.name})")
 
                                             Box(
                                                 modifier = Modifier
@@ -320,9 +335,9 @@ fun CharacterDetailScreen(
                                                     .background(MaterialTheme.colorScheme.surfaceVariant)
                                             ) {
                                                 KamelImage(
-                                                    resource = asyncPainterResource(fullIconUrl),
+                                                    resource = asyncPainterResource(fullIconUrl ?: ""),
                                                     contentDescription = ability.name,
-                                                    contentScale = ContentScale.FillBounds, // Cambiado a FillBounds para llenar completamente
+                                                    contentScale = ContentScale.Fit,
                                                     modifier = Modifier
                                                         .fillMaxSize()
                                                         .padding(4.dp),
@@ -341,9 +356,11 @@ fun CharacterDetailScreen(
                                                         ) {
                                                             Text("⚠️", fontSize = MaterialTheme.typography.titleSmall.fontSize)
                                                             Text(
-                                                                "Icon error",
+                                                                "Failed: ${fullIconUrl?.takeLast(20) ?: "null"}",
                                                                 style = MaterialTheme.typography.bodySmall,
-                                                                textAlign = TextAlign.Center
+                                                                textAlign = TextAlign.Center,
+                                                                maxLines = 2,
+                                                                overflow = TextOverflow.Ellipsis
                                                             )
                                                         }
                                                     }

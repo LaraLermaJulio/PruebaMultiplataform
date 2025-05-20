@@ -1,5 +1,7 @@
 package org.example.project
 
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Construye la URL completa para una imagen
@@ -7,6 +9,9 @@ package org.example.project
  * Si no, añade el prefijo de la API
  */
 fun getFullImageUrl(imageUrl: String): String {
+    // Log para depuración
+    println("Original imageUrl: $imageUrl")
+
     // Si ya es una URL completa, devolverla tal cual
     if (imageUrl.startsWith("http")) {
         return imageUrl
@@ -20,25 +25,36 @@ fun getFullImageUrl(imageUrl: String): String {
     }
 
     // Devolver la URL completa con el prefijo de la API
-    return "https://marvelrivalsapi.com$normalizedUrl"
+    val fullUrl = "https://marvelrivalsapi.com$normalizedUrl"
+    println("Constructed full URL: $fullUrl")
+    return fullUrl
 }
 
 /**
  * Construye la URL completa para un icono
- * Igual que getFullImageUrl pero específicamente para iconos
+ * Mejorada para manejar los paths específicos de los iconos
  */
 fun getFullIconUrl(iconUrl: String?): String? {
-    return iconUrl?.let {
-        // Algunos iconos pueden venir sin la barra inicial, asegurémonos de añadirla
-        val normalizedUrl = if (!it.startsWith("/") && !it.startsWith("http")) {
-            "/$it"
-        } else {
-            it
-        }
+    if (iconUrl == null) return null
 
-        // Ahora llamamos a getFullImageUrl con la URL normalizada
-        getFullImageUrl(normalizedUrl)
+    println("Original iconUrl: $iconUrl")
+
+    // Si ya es una URL completa, devolverla tal cual
+    if (iconUrl.startsWith("http")) {
+        return iconUrl
     }
+
+    // Verificar si el path está en formato /abilities/, /heroes/transformations/, etc.
+    val normalizedUrl = if (!iconUrl.startsWith("/")) {
+        "/$iconUrl"
+    } else {
+        iconUrl
+    }
+
+    // Construir URL completa
+    val fullUrl = "https://marvelrivalsapi.com$normalizedUrl"
+    println("Constructed icon URL: $fullUrl")
+    return fullUrl
 }
 
 /**
