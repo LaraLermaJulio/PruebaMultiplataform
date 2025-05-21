@@ -71,7 +71,7 @@ fun CharacterDetailScreen(
                         KamelImage(
                             resource = asyncPainterResource(imageUrl),
                             contentDescription = character.name,
-                            contentScale = ContentScale.Fit, // Cambiado a Fit para mostrar completa
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier.fillMaxSize(),
                             onLoading = {
                                 CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -183,7 +183,6 @@ fun CharacterDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Eliminamos la sección de transformaciones completamente
 
         // Habilidades sin imágenes
         character.abilities?.let { abilities ->

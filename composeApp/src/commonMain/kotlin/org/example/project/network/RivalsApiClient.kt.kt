@@ -11,7 +11,6 @@ import org.example.project.data.RivalsCharacter
 object RivalsApiClient {
     private const val BASE_URL = "https://marvelrivalsapi.com/api/v1/"
 
-    // Reemplaza esto con tu API key
     private const val API_KEY = "c9bcc04a9b6efa61795f220f91ea85812a5041488fe3109c1e215aa7ddca77b3"
 
     private val client = HttpClient {
@@ -49,7 +48,6 @@ object RivalsApiClient {
             response.body<List<RivalsCharacter>>()
         } catch (e: Exception) {
             println("Error fetching Marvel Rivals characters: ${e.message}")
-            // En caso de error, devolver personajes de demostración
             demoCharacters
         }
     }

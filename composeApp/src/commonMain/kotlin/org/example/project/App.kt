@@ -61,7 +61,6 @@ fun rememberAppState() = remember { AppState() }
 @Composable
 fun App() {
     val state = rememberAppState()
-    val scope = rememberCoroutineScope()
 
     // Cargar datos automáticamente al inicio
     LaunchedEffect(Unit) {
