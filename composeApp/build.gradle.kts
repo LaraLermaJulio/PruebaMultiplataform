@@ -60,19 +60,20 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
 
+
                 // Ktor Client core + JSON (3.1.3)
-                implementation(libs.ktor.client.core.v313)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json.v313)
+                implementation("io.ktor:ktor-client-core:3.1.3")
+                implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
 
                 // Kotlinx Serialization
-                implementation(libs.kotlinx.serialization.json)
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
                 // Carga de imágenes multiplataforma (Kamel 1.0.5)
-                implementation(libs.kamel.image.default)
+                implementation("media.kamel:kamel-image-default:1.0.5")
                 implementation(compose.materialIconsExtended)
 
-                // Lifecycle
+                // Lifecycle (opcional, si lo usas)
                 implementation(libs.androidx.lifecycle.viewmodel)
                 implementation(libs.androidx.lifecycle.runtimeCompose)
 
@@ -81,7 +82,6 @@ kotlin {
 
                 //hora
                 implementation(libs.kotlinx.datetime)
-
             }
 
         }
@@ -90,8 +90,9 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutinesSwing)
-                implementation(libs.ktor.client.cio)
-                implementation(libs.androidx.collection.ktx)
+                // Ktor Desktop engine (3.1.3)
+                implementation("io.ktor:ktor-client-cio:3.1.3")
+                implementation("androidx.collection:collection-ktx:1.2.0")
             }
         }
 
@@ -99,11 +100,11 @@ kotlin {
             dependencies {
                 implementation(compose.preview)
                 implementation(libs.androidx.activity.compose)
-                // Ktor Android engine
-                implementation(libs.ktor.client.okhttp)
+                // Ktor Android engine (3.1.3)
+                implementation("io.ktor:ktor-client-okhttp:3.1.3")
 
                 // Coil para Android
-                implementation(libs.coil.compose)
+                implementation("io.coil-kt:coil-compose:2.3.0")
             }
         }
 
